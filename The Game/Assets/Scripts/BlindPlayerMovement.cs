@@ -1,76 +1,71 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class BlindPlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviour
 {
-    public float moveSpeed = 5f;
-    public float jumpForce = 7f;
-
     private Rigidbody2D rb;
-    private bool isGrounded;
-    private SpriteRenderer spriteRenderer;
-    private Animator animator;
+    private BoxCollider2D coll;
+    private SpriteRenderer sprite;
+    private Animator anim;
 
-    public bool isMoving { get; private set; } // Untuk animasi
+    [SerializeField] private LayerMask jumpableGround;
 
-    void Start()
+    private float dirX = 0f;
+    [SerializeField] private float moveSpeed = 7f;
+    [SerializeField] private float jumpForce = 8f;
+
+    private enum MovementState { idle, running, jumping, falling}
+
+    // Start is called before the first frame update
+    private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        animator = GetComponent<Animator>();
+        coll = GetComponent<BoxCollider2D>();
+        sprite = GetComponent<SpriteRenderer>();
+        anim = GetComponent<Animator>();
     }
 
-    void Update()
+    // Update is called once per frame
+    private void Update()
     {
-        Move();
-        Jump();
-        UpdateAnimation();
-    }
+        dirX = Input.GetAxis("Horizontal");
+        rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
 
-    void Move()
-    {
-        float moveInput = Input.GetAxis("Horizontal");
-
-        rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
-
-        // Cek apakah karakter sedang bergerak atau diam
-        isMoving = moveInput != 0;
-
-        // Flip sprite jika bergerak ke kiri
-        if (moveInput < 0)
-            spriteRenderer.flipX = true;
-        else if (moveInput > 0)
-            spriteRenderer.flipX = false;
-    }
-
-    void Jump()
-    {
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
-        {
+        if(Input.GetKeyDown("space") && isGrounded()){
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
+
+        // UpdateAnimationState();
     }
 
-    void UpdateAnimation()
+    private void UpdateAnimationState()
     {
-        if (animator != null)
-        {
-            animator.SetBool("isMoving", isMoving);
+        MovementState state;
+
+        if(dirX > 0f){
+            state = MovementState.running;
+            sprite.flipX = false;
         }
+        else if(dirX < 0f){
+            state = MovementState.running;
+            sprite.flipX = true;
+        }
+        else{
+            state = MovementState.idle;
+        }
+
+        if(rb.velocity.y > .1f){
+            state = MovementState.jumping;
+        }
+        else if(rb.velocity.y < -.1f){
+            state = MovementState.falling;
+        }
+
+        anim.SetInteger("state", (int)state);
     }
 
-    void OnCollisionStay2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = true;
-        }
-    }
-
-    void OnCollisionExit2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = false;
-        }
+    private bool isGrounded(){
+        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f, jumpableGround);
     }
 }
