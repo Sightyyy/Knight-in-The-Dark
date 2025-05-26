@@ -22,7 +22,6 @@ public class SubmarineSensor : MonoBehaviour
 
     void Update()
     {
-        // Handle cooldown
         if (isOnCooldown)
         {
             cooldownTimer -= Time.deltaTime;
@@ -32,7 +31,6 @@ public class SubmarineSensor : MonoBehaviour
             }
         }
 
-        // Check for sensor activation
         if ((Input.GetKeyDown(sensorKey) || (useMouseClick && Input.GetMouseButtonDown(0))) 
             && !isSensorActive && !isOnCooldown)
         {
@@ -53,7 +51,6 @@ public class SubmarineSensor : MonoBehaviour
     {
         isSensorActive = true;
         
-        // Get all Tilemap objects with "Sensored" tag within radius
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, sensorRadius);
         
         foreach (Collider2D collider in hitColliders)
@@ -63,7 +60,6 @@ public class SubmarineSensor : MonoBehaviour
                 Tilemap tilemap = collider.GetComponent<Tilemap>();
                 if (tilemap != null)
                 {
-                    // Start the fade effect on each detected tilemap
                     StartCoroutine(FadeTilemap(tilemap));
                 }
             }
@@ -79,10 +75,8 @@ public class SubmarineSensor : MonoBehaviour
         Color targetColor = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
         Color startColor = new Color(originalColor.r, originalColor.g, originalColor.b, initialOpacity);
 
-        // Set initial opacity
         tilemap.color = startColor;
 
-        // Fade to transparent
         float elapsedTime = 0f;
         while (elapsedTime < fadeDuration)
         {
@@ -91,7 +85,6 @@ public class SubmarineSensor : MonoBehaviour
             yield return null;
         }
 
-        // Ensure final color is set
         tilemap.color = targetColor;
     }
 
