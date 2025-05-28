@@ -10,6 +10,7 @@ TagManager:
   - Sensored
   - Sensor
   - Checkpoint
+  - Audio
   layers:
   - Default
   - TransparentFX
