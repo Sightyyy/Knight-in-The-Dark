@@ -19,6 +19,9 @@ public class PlayerCollider : MonoBehaviour
     private Animator animator;
     private Collider2D col;
     private SpriteRenderer spriteRenderer;
+    public float fallStartCheckDelay = 0.1f;
+    public float fallTimer = 0f;
+    public float fallSpeedThreshold = -2f;
 
     private Vector3 startPoint;
     private Vector3? checkpoint = null;
@@ -33,6 +36,7 @@ public class PlayerCollider : MonoBehaviour
     {
         playerMovement = GameObject.FindAnyObjectByType<PlayerMovement>().GetComponent<PlayerMovement>();
     }
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -41,7 +45,6 @@ public class PlayerCollider : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
 
         startPoint = transform.position;
-
         previousPosition = transform.position;
     }
 
@@ -50,32 +53,53 @@ public class PlayerCollider : MonoBehaviour
         if (isDying) return;
 
         bool isGrounded = IsGrounded();
+        float verticalVelocity = rb.velocity.y;
 
         if (!isGrounded)
         {
-            if (transform.position.y < previousPosition.y && firstTime)
+            if (verticalVelocity < fallSpeedThreshold)
             {
-                firstTime = false;
-                isFalling = true;
-                highestPosition = transform.position.y;
+                fallTimer += Time.deltaTime;
+
+                if (fallTimer >= fallStartCheckDelay && firstTime)
+                {
+                    firstTime = false;
+                    isFalling = true;
+                    highestPosition = transform.position.y;
+                }
             }
-            previousPosition = transform.position;
+            else
+            {
+                fallTimer = 0f;
+            }
         }
 
         if (isGrounded && isFalling)
         {
-            if (highestPosition - transform.position.y > 6)
+            float fallDistance = highestPosition - transform.position.y;
+
+            if (fallDistance > fallDistanceThreshold)
             {
                 StartCoroutine(DieAndRespawn());
             }
+
             isFalling = false;
             firstTime = true;
+            fallTimer = 0f;
         }
     }
 
     private bool IsGrounded()
     {
-        return Physics2D.BoxCast(col.bounds.center, col.bounds.size, 0f, Vector2.down, 0.1f, playerMovement.jumpableGround);
+        RaycastHit2D hit = Physics2D.BoxCast(
+            col.bounds.center,
+            col.bounds.size,
+            0f,
+            Vector2.down,
+            0.1f,
+            groundLayer
+        );
+        return hit.collider != null;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -101,13 +125,13 @@ public class PlayerCollider : MonoBehaviour
     private IEnumerator DieAndRespawn()
     {
         isDying = true;
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+
         rb.velocity = Vector2.zero;
         rb.simulated = false;
         col.enabled = false;
 
         playerMovement.SetDeadAnimation();
-        
+
         yield return new WaitForSeconds(respawnDelay);
 
         playerMovement.isDead = false;
@@ -139,7 +163,5 @@ public class PlayerCollider : MonoBehaviour
         }
 
         isDying = false;
-        // fallStartY = null;
-        // wasGroundedLastFrame = true;
     }
 }

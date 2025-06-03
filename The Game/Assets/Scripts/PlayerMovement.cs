@@ -14,11 +14,14 @@ public class PlayerMovement : MonoBehaviour
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 7f;
     [SerializeField] private float jumpForce = 12f;
-    [SerializeField] private float fallMultiplier = 2.5f;     // jatuh lebih cepat
-    [SerializeField] private float lowJumpMultiplier = 2f;    // lompat lebih pendek saat lepas tombol
+    [SerializeField] private float fallMultiplier = 2.5f;
+    [SerializeField] private float lowJumpMultiplier = 2f;
 
     private float dirX = 0f;
     public bool isDead = false;
+
+    private bool isTouchingWall = false;
+    private bool isGrounded = false;
 
     private void Start()
     {
@@ -30,24 +33,26 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        if (isDead)
-        {
-            return; // Jangan update animasi lagi
-        }
+        if (isDead) return;
 
+        isGrounded = IsGrounded();
+        isTouchingWall = IsTouchingWall();
 
         dirX = Input.GetAxisRaw("Horizontal");
 
-        if (Input.GetButtonDown("Jump") && IsGrounded())
+        if (!isGrounded && isTouchingWall)
+        {
+            dirX = 0f;
+        }
+
+        if (Input.GetButtonDown("Jump") && isGrounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
 
-        BetterJump(); // kontrol kecepatan jatuh
-
+        BetterJump();
         UpdateAnimationState();
     }
-
 
     private void FixedUpdate()
     {
@@ -71,37 +76,27 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-
-
     public void SetDeadAnimation()
     {
         isDead = true;
-        dirX = 0f; // pastikan tidak bergerak
-
+        dirX = 0f;
         rb.velocity = Vector2.zero;
-
-        // Langsung paksa main animasi "Death" (pastikan nama clip-nya persis!)
-        anim.Play("Player Dead", 0, 0); 
-
-        // Kalau masih pakai parameter lain, tetap set juga (opsional)
+        anim.Play("Player Dead", 0, 0);
         anim.SetInteger("state", 2);
         anim.SetBool("IsDead", true);
     }
-
-
 
     private void BetterJump()
     {
         if (rb.velocity.y < 0)
         {
-            rb.velocity += Vector2.up * Physics2D.gravity.y * 2f * Time.deltaTime;
+            rb.velocity += Vector2.up * Physics2D.gravity.y * fallMultiplier * Time.deltaTime;
         }
         else if (rb.velocity.y > 0 && !Input.GetButton("Jump"))
         {
-            rb.velocity += Vector2.up * Physics2D.gravity.y * 1.5f * Time.deltaTime;
+            rb.velocity += Vector2.up * Physics2D.gravity.y * lowJumpMultiplier * Time.deltaTime;
         }
     }
-
 
     private bool IsGrounded()
     {
@@ -110,4 +105,12 @@ public class PlayerMovement : MonoBehaviour
         return Physics2D.BoxCast(origin, size, 0f, Vector2.down, 0.05f, jumpableGround);
     }
 
+    private bool IsTouchingWall()
+    {
+        Vector2 direction = sprite.flipX ? Vector2.left : Vector2.right;
+        Vector2 origin = coll.bounds.center;
+        Vector2 size = new Vector2(coll.bounds.size.x * 0.9f, coll.bounds.size.y * 0.9f);
+
+        return Physics2D.BoxCast(origin, size, 0f, direction, 0.05f, jumpableGround);
+    }
 }
