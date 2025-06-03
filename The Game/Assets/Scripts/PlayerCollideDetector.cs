@@ -114,11 +114,8 @@ public class PlayerCollider : MonoBehaviour
         {
             Vector3 newCheckpoint = collision.transform.position;
 
-            if (checkpoint == null || newCheckpoint.x > checkpoint.Value.x)
-            {
-                checkpoint = newCheckpoint;
-                Debug.Log("Checkpoint updated: " + checkpoint);
-            }
+            checkpoint = newCheckpoint;
+            Debug.Log("Checkpoint updated: " + checkpoint);
         }
     }
 
@@ -162,6 +159,12 @@ public class PlayerCollider : MonoBehaviour
             spriteRenderer.enabled = true;
         }
 
+        isFalling = false;
+        firstTime = true;
+        fallTimer = 0f;
+        highestPosition = transform.position.y;
+
         isDying = false;
     }
+
 }
