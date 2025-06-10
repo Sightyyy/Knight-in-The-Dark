@@ -1,12 +1,14 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using TMPro;
 
 public class PlayerCollider : MonoBehaviour
 {
     [Header("Respawn Settings")]
     public float respawnDelay = 2f;
     public int lives = 25;
+    public TMP_Text livesText;
 
     [Header("Fall Death Settings")]
     public float fallDistanceThreshold = 7f;
@@ -19,6 +21,7 @@ public class PlayerCollider : MonoBehaviour
     private Animator animator;
     private Collider2D col;
     private SpriteRenderer spriteRenderer;
+    AudioCollection audioCollection;
     public float fallStartCheckDelay = 0.1f;
     public float fallTimer = 0f;
     public float fallSpeedThreshold = -2f;
@@ -35,6 +38,7 @@ public class PlayerCollider : MonoBehaviour
     void Awake()
     {
         playerMovement = GameObject.FindAnyObjectByType<PlayerMovement>().GetComponent<PlayerMovement>();
+        audioCollection = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioCollection>();
     }
 
     void Start()
@@ -46,6 +50,8 @@ public class PlayerCollider : MonoBehaviour
 
         startPoint = transform.position;
         previousPosition = transform.position;
+
+        UpdateLivesText();
     }
 
     void Update()
@@ -80,7 +86,9 @@ public class PlayerCollider : MonoBehaviour
 
             if (fallDistance > fallDistanceThreshold)
             {
+                audioCollection.PlaySFX(audioCollection.death2);
                 StartCoroutine(DieAndRespawn());
+                audioCollection.PlaySFX(audioCollection.vo9);
             }
 
             isFalling = false;
@@ -108,13 +116,15 @@ public class PlayerCollider : MonoBehaviour
 
         if (collision.CompareTag("Death"))
         {
+            audioCollection.PlaySFX(audioCollection.death);
             StartCoroutine(DieAndRespawn());
+            audioCollection.PlaySFX(audioCollection.vo8);
         }
         else if (collision.CompareTag("Checkpoint"))
         {
             Vector3 newCheckpoint = collision.transform.position;
-
             checkpoint = newCheckpoint;
+            audioCollection.PlaySFX(audioCollection.checkpoint);
             Debug.Log("Checkpoint updated: " + checkpoint);
         }
     }
@@ -134,9 +144,11 @@ public class PlayerCollider : MonoBehaviour
         playerMovement.isDead = false;
 
         lives--;
+        UpdateLivesText();
+
         if (lives <= 0)
         {
-            SceneManager.LoadScene("GameOver");
+            SceneManager.LoadScene("Game Over");
             yield break;
         }
 
@@ -167,4 +179,11 @@ public class PlayerCollider : MonoBehaviour
         isDying = false;
     }
 
+    private void UpdateLivesText()
+    {
+        if (livesText != null)
+        {
+            livesText.text = "Lives: " + lives.ToString();
+        }
+    }
 }

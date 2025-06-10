@@ -22,7 +22,12 @@ public class PlayerMovement : MonoBehaviour
 
     private bool isTouchingWall = false;
     private bool isGrounded = false;
-
+    private bool wasWalking = false;
+    AudioCollection audioCollection;
+    private void Awake()
+    {
+        audioCollection = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioCollection>();
+    }
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -48,6 +53,7 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            audioCollection.PlaySFX(audioCollection.jump);
         }
 
         BetterJump();
@@ -65,14 +71,21 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isDead) return;
 
-        if (dirX != 0f)
+        if (dirX != 0f && isGrounded)
         {
             anim.SetInteger("state", 1);
             sprite.flipX = dirX < 0f;
+
+            if (!wasWalking)
+            {
+                audioCollection.PlaySFX(audioCollection.walking);
+                wasWalking = true;
+            }
         }
         else
         {
             anim.SetInteger("state", 0);
+            wasWalking = false;
         }
     }
 

@@ -11,6 +11,7 @@ TagManager:
   - Sensor
   - Checkpoint
   - Audio
+  - End
   layers:
   - Default
   - TransparentFX
