@@ -42,7 +42,27 @@ public class AudioCollection : MonoBehaviour
     public NamedAudioClip[] voiceOvers;
 
     private List<AudioSource> sfxSources = new List<AudioSource>();
+    private List<AudioSource> voSource = new List<AudioSource>();
 
+    private void Awake()
+    {
+        voiceOvers = new NamedAudioClip[10];
+        voiceOvers[0] = new NamedAudioClip { name = "VO1", clip = vo1 };
+        voiceOvers[1] = new NamedAudioClip { name = "VO2", clip = vo2 };
+        voiceOvers[2] = new NamedAudioClip { name = "VO3", clip = vo3 };
+        voiceOvers[3] = new NamedAudioClip { name = "VO4", clip = vo4 };
+        voiceOvers[4] = new NamedAudioClip { name = "VO5", clip = vo5 };
+        voiceOvers[5] = new NamedAudioClip { name = "VO6", clip = vo6 };
+        voiceOvers[6] = new NamedAudioClip { name = "VO7", clip = vo7 };
+        voiceOvers[7] = new NamedAudioClip { name = "VO8", clip = vo8 };
+        voiceOvers[8] = new NamedAudioClip { name = "VO9", clip = vo9 };
+        voiceOvers[9] = new NamedAudioClip { name = "VO10", clip = vo10 };
+    }
+    public void ForcedPlayVO1()
+    {
+        BGM.clip = vo1;
+        BGM.Play();
+    }
     public void PlayBGM(AudioClip clip)
     {
         BGM.clip = clip;
@@ -51,11 +71,15 @@ public class AudioCollection : MonoBehaviour
     }
     public void PlaySound(AudioClip clip)
     {
-        SFX.clip = clip;
-        SFX.PlayOneShot(clip);
+        BGM.clip = clip;
+        BGM.PlayOneShot(clip);
     }
 
     public void StopPlayBGM()
+    {
+        BGM.Stop();
+    }
+    public void StopPlayVO()
     {
         BGM.Stop();
     }
@@ -98,21 +122,15 @@ public class AudioCollection : MonoBehaviour
 
     public void PlayVO(AudioClip clip)
     {
-        if (clip != null && VO != null)
+        if (clip != null && SFX != null)
         {
-            VO.clip = clip;
-            VO.Play();
+            SFX.clip = clip;
+            SFX.Play();
         }
     }
     public void StopVO()
     {
-        foreach (var source in sfxSources)
-        {
-            if (source.isPlaying)
-            {
-                source.Stop();
-            }
-        }
+        SFX.Stop();
     }
 
     public AudioClip GetClipByName(string name)

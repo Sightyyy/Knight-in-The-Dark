@@ -23,17 +23,25 @@ public class PlayerMovement : MonoBehaviour
     private bool isTouchingWall = false;
     private bool isGrounded = false;
     private bool wasWalking = false;
+    private AudioSource walkingAudioSource;
     AudioCollection audioCollection;
+
     private void Awake()
     {
         audioCollection = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioCollection>();
     }
+
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         coll = GetComponent<CapsuleCollider2D>();
         sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
+        
+        walkingAudioSource = gameObject.AddComponent<AudioSource>();
+        walkingAudioSource.clip = audioCollection.walking;
+        walkingAudioSource.loop = true;
+        walkingAudioSource.playOnAwake = false;
     }
 
     private void Update()
@@ -58,6 +66,7 @@ public class PlayerMovement : MonoBehaviour
 
         BetterJump();
         UpdateAnimationState();
+        UpdateWalkingSound();
     }
 
     private void FixedUpdate()
@@ -75,17 +84,24 @@ public class PlayerMovement : MonoBehaviour
         {
             anim.SetInteger("state", 1);
             sprite.flipX = dirX < 0f;
-
-            if (!wasWalking)
-            {
-                audioCollection.PlaySFX(audioCollection.walking);
-                wasWalking = true;
-            }
         }
         else
         {
             anim.SetInteger("state", 0);
-            wasWalking = false;
+        }
+    }
+
+    private void UpdateWalkingSound()
+    {
+        bool shouldBeWalking = dirX != 0f && isGrounded && !isDead;
+        
+        if (shouldBeWalking && !walkingAudioSource.isPlaying)
+        {
+            walkingAudioSource.Play();
+        }
+        else if (!shouldBeWalking && walkingAudioSource.isPlaying)
+        {
+            walkingAudioSource.Stop();
         }
     }
 
@@ -97,6 +113,11 @@ public class PlayerMovement : MonoBehaviour
         anim.Play("Player Dead", 0, 0);
         anim.SetInteger("state", 2);
         anim.SetBool("IsDead", true);
+        
+        if (walkingAudioSource.isPlaying)
+        {
+            walkingAudioSource.Stop();
+        }
     }
 
     private void BetterJump()

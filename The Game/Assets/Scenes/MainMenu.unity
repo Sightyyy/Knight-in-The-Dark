@@ -415,7 +415,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.007843138, g: 0, b: 0.23529412, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -539,6 +539,7 @@ MonoBehaviour:
   gameOver: {fileID: 0}
   buttonClick: {fileID: 8300000, guid: 811bfd55514967541997a857d0aecfdc, type: 3}
   death: {fileID: 8300000, guid: c01d7959455267141b5acde4c24760c2, type: 3}
+  death2: {fileID: 0}
   walking: {fileID: 8300000, guid: 920029f9995450748a6145fd53bb4949, type: 3}
   sensor: {fileID: 8300000, guid: c1930d9d145c85d4e8ef6b23dde1fd5d, type: 3}
   jump: {fileID: 8300000, guid: 5287b22d1abc41f48a5aac983602193f, type: 3}

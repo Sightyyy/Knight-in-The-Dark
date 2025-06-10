@@ -8,6 +8,7 @@ public class GameMenu : MonoBehaviour
 {
     public Image transitionImage;
     public float transitionTime = 1.0f;
+    private bool paused = false;
     AudioCollection audioCollection;
     [SerializeField] private GameObject pausePanel;
 
@@ -20,15 +21,23 @@ public class GameMenu : MonoBehaviour
     {
         transitionImage.gameObject.SetActive(true);
         StartCoroutine(TransitionOpening());
-        audioCollection.PlaySFX(audioCollection.vo1);
+        audioCollection.ForcedPlayVO1();
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            audioCollection.PlaySFX(audioCollection.buttonClick);
-            Pause();
+            if (!paused)
+            {
+                audioCollection.PlaySFX(audioCollection.buttonClick);
+                Pause();
+            }
+            else
+            {
+                audioCollection.PlaySFX(audioCollection.buttonClick);
+                Resume();
+            }
         }
     }
 
@@ -46,12 +55,14 @@ public class GameMenu : MonoBehaviour
     private void Pause()
     {
         pausePanel.SetActive(true);
+        paused = true;
         Time.timeScale = 0f;
     }
 
     public void Resume()
     {
         pausePanel.SetActive(false);
+        paused = false;
         Time.timeScale = 1f;
     }
 

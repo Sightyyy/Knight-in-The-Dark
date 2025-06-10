@@ -29,7 +29,7 @@ public class PlayerCollider : MonoBehaviour
     private Vector3 startPoint;
     private Vector3? checkpoint = null;
 
-    private bool isDying = false;
+    public bool isDying = false;
     private bool firstTime = true;
     private bool isFalling = false;
     private Vector3 previousPosition;
@@ -86,9 +86,13 @@ public class PlayerCollider : MonoBehaviour
 
             if (fallDistance > fallDistanceThreshold)
             {
-                audioCollection.PlaySFX(audioCollection.death2);
+                
                 StartCoroutine(DieAndRespawn());
+                audioCollection.StopSFX();
+                audioCollection.StopPlayBGM();
+                audioCollection.StopPlayVO();
                 audioCollection.PlaySFX(audioCollection.vo9);
+                audioCollection.PlaySFX(audioCollection.death2);
             }
 
             isFalling = false;
@@ -116,16 +120,28 @@ public class PlayerCollider : MonoBehaviour
 
         if (collision.CompareTag("Death"))
         {
-            audioCollection.PlaySFX(audioCollection.death);
             StartCoroutine(DieAndRespawn());
+            audioCollection.StopSFX();
+            audioCollection.StopPlayBGM();
+            audioCollection.StopPlayVO();
             audioCollection.PlaySFX(audioCollection.vo8);
+            audioCollection.PlaySFX(audioCollection.death);
         }
         else if (collision.CompareTag("Checkpoint"))
         {
             Vector3 newCheckpoint = collision.transform.position;
-            checkpoint = newCheckpoint;
-            audioCollection.PlaySFX(audioCollection.checkpoint);
-            Debug.Log("Checkpoint updated: " + checkpoint);
+            if (newCheckpoint != checkpoint)
+            {
+                checkpoint = newCheckpoint;
+                audioCollection.StopSFX();
+                audioCollection.StopPlayBGM();
+                audioCollection.PlaySFX(audioCollection.checkpoint);
+                Debug.Log("Checkpoint updated: " + checkpoint);
+            }
+            else
+            {
+                return;
+            }
         }
     }
 

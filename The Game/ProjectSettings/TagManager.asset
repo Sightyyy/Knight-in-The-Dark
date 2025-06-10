@@ -12,6 +12,7 @@ TagManager:
   - Checkpoint
   - Audio
   - End
+  - Admin
   layers:
   - Default
   - TransparentFX
